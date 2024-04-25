@@ -8,6 +8,8 @@ django = "*"
 djangorestframework = "*"
 django-filter = "*"
 pillow = "*"
+psycopg2 = "*"
+mysqlclient = "*"
 
 [dev-packages]
 

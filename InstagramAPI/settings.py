@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'account.apps.AccountConfig',
     'post.apps.PostConfig',
+    'comment.apps.CommentConfig',
     'message.apps.MessageConfig',
     'story.apps.StoryConfig',
     'django.contrib.admin',
@@ -78,13 +79,34 @@ WSGI_APPLICATION = 'InstagramAPI.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'InstagramDB',  # Replace with your actual database name
+#         'USER': 'postgres',  # Replace with your PostgreSQL username
+#         'PASSWORD': 'quantuanhuy',  # Replace with your PostgreSQL password
+#         'HOST': 'localhost',  # Replace with your PostgreSQL host if it's not localhost
+#         'PORT': '5430',  # Default PostgreSQL port, adjust if different
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'instagramDB',  # Replace with your actual database name
+        'USER': 'root',  # Replace with your MySQL username
+        'PASSWORD': 'quantuanhuy',  # Replace with your MySQL password
+        'HOST': 'localhost',  # Replace with your MySQL host if it's not localhost
+        'PORT': '3306',  # Default MySQL port, adjust if different
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
