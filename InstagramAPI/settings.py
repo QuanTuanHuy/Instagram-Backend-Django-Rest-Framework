@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'account.apps.AccountConfig',
     'post.apps.PostConfig',
     'comment.apps.CommentConfig',
+    'location.apps.LocationConfig',
     'message.apps.MessageConfig',
     'story.apps.StoryConfig',
     'django.contrib.admin',

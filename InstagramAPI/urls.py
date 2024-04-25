@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('', include('account.urls')),
+    path('locations/', include("location.urls")),
 ]
 
 if settings.DEBUG:
