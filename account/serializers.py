@@ -39,9 +39,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    full_name = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'full_name', 'email', 'password']
+
+    def get_full_name(self, obj):
+        return obj.first_name + ' ' + obj.last_name
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)

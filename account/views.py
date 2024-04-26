@@ -53,3 +53,12 @@ class ProfileDetail(RetrieveUpdateAPIView):
     permission_classes = [IsOwnerOrReadOnly]
     lookup_field = 'profile_name'
 
+class ProfileSearch(ListAPIView):
+    serializer_class = ProfileSerializer
+
+    def get_queryset(self):
+        queryset = Profile.objects.all()
+        profile_name = self.request.query_params.get('search_key')
+        if profile_name is not None:
+            queryset = queryset.filter(profile_name__contains=profile_name)
+        return queryset
