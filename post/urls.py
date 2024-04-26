@@ -1,6 +1,7 @@
 from django.urls import include, path
 from . import views
 
-# urlpatterns = [
-#    path('locations/', views.Lis)
-# ]
+urlpatterns = [
+   path('', views.PostList.as_view(), name='post-list'),
+   path('create', views.PostCreate.as_view(), name='post-create'),
+]

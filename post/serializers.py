@@ -1,10 +1,16 @@
 from rest_framework import serializers
 
+from location.models import Place
+from account.models import Profile
+
 from .models import Post
 
-class PostSerializers(serializers.ModelSerializer):
-    created = serializers.DateTimeField(read_only=True)
+class PostCreateSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+    caption = serializers.CharField()
+    location = serializers.ChoiceField(choices=Place.objects.all(), required=False)
+
+class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['owner_profile_name', 'created', 'image',
-                  'caption', 'location_name']
+        fields = '__all__'
