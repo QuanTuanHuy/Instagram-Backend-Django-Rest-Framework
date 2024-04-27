@@ -33,4 +33,4 @@ class PostInPlace(ListAPIView):
         pk = self.kwargs['pk']
         if slug and pk:
             place = get_object_or_404(Place, slug=slug, pk=pk)
-        return place.posts_in_location
+        return place.posts_in_location.order_by('-created')
