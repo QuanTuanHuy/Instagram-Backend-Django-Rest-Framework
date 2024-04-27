@@ -1,15 +1,19 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.status import *
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+
+from django.shortcuts import get_object_or_404, get_list_or_404
 
 from account.models import Profile
+from account.serializers import ProfileSerializer
 
 from .models import Post
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
 
-# Create your views here.
 
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
@@ -21,7 +25,7 @@ class PostViewSet(ModelViewSet):
             post = Post.objects.create(owner=owner, **serializer.validated_data)
             post.save()
             return Response(PostSerializer(post).data,
-                            status=HTTP_201_CREATED)
+                            status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -30,7 +34,7 @@ class PostViewSet(ModelViewSet):
             post.caption = serializer.validated_data['caption']
             post.save()
             return Response(PostSerializer(post).data,
-                            status=HTTP_202_ACCEPTED) 
+                            status=status.HTTP_202_ACCEPTED)
 
     def get_permissions(self):
         if self.action == 'create':
@@ -42,6 +46,44 @@ class PostViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return PostCreateSerializer
-        elif self.action in ('partial_update', 'update'):
+        elif self.action in ('update', 'partial_update'):
             return PostUpdateSerializer
         return PostSerializer
+
+# create like (neu chua co thi tao, neu co thi xoa)
+# xem cac bai post da like (list)
+# xem ai da like bai viet
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def like_create(request):
+    profile = Profile.objects.get(user = request.user)
+    request.data['profile_name'] = profile.profile_name
+    serializer = LikeCreateSerializer(data=request.data)
+
+    if serializer.is_valid():
+        like = serializer.save()
+        return Response(LikeSerializer(like).data ,status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def liked_post(request, profile_name):
+    profile = get_object_or_404(Profile, user=request.user, profile_name=profile_name)
+    post_ids = Like.objects.filter(profile=profile).select_related('post') \
+                                                .values_list('post', flat=True)
+    posts = Post.objects.filter(pk__in=post_ids)
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def profile_liked(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    profile_ids = Like.objects.filter(post=post).select_related('profile') \
+                                                .values_list('profile', flat=True)
+    profiles = Profile.objects.filter(pk__in=profile_ids)
+    serializer = ProfileSerializer(profiles, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    

@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from account.models import Profile
 from location.models import Place
 
-# Create your models here.
 class Post(models.Model):
     owner = models.ForeignKey(Profile, related_name='posts',
                               on_delete=models.CASCADE)
@@ -15,3 +14,16 @@ class Post(models.Model):
                                  on_delete=models.SET_NULL,
                                  null=True)
 
+
+    class Meta:
+        ordering = ['-created']
+
+class Like(models.Model):
+    profile = models.ForeignKey(Profile, related_name='post_liked',
+                                on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='likes',
+                             on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']

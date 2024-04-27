@@ -3,12 +3,11 @@ from . import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'', views.PostViewSet, basename='post')
+router.register(r'posts', views.PostViewSet, basename='post')
 
-urlpatterns = router.urls
-
-# urlpatterns = [
-#    path('', views.PostList.as_view(), name='post-list'),
-#    path('<int:id>/change', ),
-#    path('create', views.PostCreate.as_view(), name='post-create'),
-# ]
+urlpatterns = [
+    path('', include(router.urls)),
+    path('posts/<int:post_id>/likes', views.profile_liked, name='profile_liked'),
+    path('likes/', views.like_create, name='create-like'),
+    path('<str:profile_name>/liked_post', views.liked_post, name='like-post'),
+]
