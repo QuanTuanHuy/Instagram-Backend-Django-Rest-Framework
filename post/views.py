@@ -50,6 +50,23 @@ class PostViewSet(ModelViewSet):
             return PostUpdateSerializer
         return PostSerializer
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def posted(request, profile_name):
+    owner = Profile.objects.get(profile_name=profile_name)
+    serializer = PostSerializer(owner.posts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+#what are profile liked this post
+@api_view(['GET'])
+def profile_liked(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    profile_ids = Like.objects.filter(post=post).select_related('profile') \
+                                                .values_list('profile', flat=True)
+    profiles = Profile.objects.filter(pk__in=profile_ids)
+    serializer = ProfileSerializer(profiles, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 #LIKE VIEW
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -73,14 +90,7 @@ def liked_post(request, profile_name):
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def profile_liked(request, post_id):
-    post = get_object_or_404(Post, pk=post_id)
-    profile_ids = Like.objects.filter(post=post).select_related('profile') \
-                                                .values_list('profile', flat=True)
-    profiles = Profile.objects.filter(pk__in=profile_ids)
-    serializer = ProfileSerializer(profiles, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 
     
