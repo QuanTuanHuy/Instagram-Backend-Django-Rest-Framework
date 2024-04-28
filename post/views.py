@@ -14,7 +14,7 @@ from .models import Post
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
 
-
+#POSTVIEW
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
 
@@ -50,10 +50,7 @@ class PostViewSet(ModelViewSet):
             return PostUpdateSerializer
         return PostSerializer
 
-# create like (neu chua co thi tao, neu co thi xoa)
-# xem cac bai post da like (list)
-# xem ai da like bai viet
-
+#LIKE VIEW
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def like_create(request):

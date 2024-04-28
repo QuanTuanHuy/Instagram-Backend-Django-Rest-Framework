@@ -44,7 +44,6 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ['profile_name', 'post_id', 'created']
-        depth = 1
 
     def get_profile_name(self, obj):
         return obj.profile.profile_name
