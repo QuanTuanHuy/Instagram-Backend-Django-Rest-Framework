@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from account.models import Profile
 from account.serializers import ProfileSerializer
 
+from comment.serializers import CommentCreateSerializer, CommentSerializer
+
 from .models import Post
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
@@ -52,8 +54,8 @@ class PostViewSet(ModelViewSet):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def posted(request, profile_name):
-    owner = Profile.objects.get(profile_name=profile_name)
+def history_post(request):
+    owner = Profile.objects.get(user=request.user)
     serializer = PostSerializer(owner.posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -82,15 +84,35 @@ def like_create(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def liked_post(request, profile_name):
-    profile = get_object_or_404(Profile, user=request.user, profile_name=profile_name)
+def history_likes(request):
+    profile = get_object_or_404(Profile, user=request.user)
     post_ids = Like.objects.filter(profile=profile).select_related('post') \
                                                 .values_list('post', flat=True)
     posts = Post.objects.filter(pk__in=post_ids)
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+#CommetView
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def comment_create(request):
+    profile = Profile.objects.get(user=request.user)
+    if profile.profile_name != request.data['profile_name']:
+        return Response({"profile_name": "Wrong profile_name"},status=status.HTTP_400_BAD_REQUEST)
+    serializer = CommentCreateSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+    return Response(status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def history_comments(request):
+    profile = Profile.objects.get(user=request.user)
+    comments = profile.comments
+    serializers = CommentSerializer(comments, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
     
 
     

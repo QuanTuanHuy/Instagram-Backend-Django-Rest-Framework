@@ -8,7 +8,12 @@ router.register(r'posts', views.PostViewSet, basename='post')
 urlpatterns = [
     path('', include(router.urls)),
     path('posts/<int:post_id>/likes', views.profile_liked, name='profile_liked'),
-    path('likes/', views.like_create, name='create-like'),
-    path('<str:profile_name>/posted', views.posted, name='posted'),
-    path('<str:profile_name>/liked_post', views.liked_post, name='like-post'),
+    path('posts/<int:post_id>/comments', views.profile_liked, name='comments_in_post'),
+
+    path('create_like/', views.like_create, name='like_create'),
+    path('create_commment/', views.comment_create, name='comment_create'),
+
+    path('your_activity/posts/', views.history_post, name='history_post'),
+    path('your_activity/likes/', views.history_likes, name='history_likes'),
+    path('your_activity/comments/', views.history_comments, name='history_comments'),
 ]
