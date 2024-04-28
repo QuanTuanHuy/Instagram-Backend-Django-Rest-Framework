@@ -20,6 +20,11 @@ class CommentCreateSerializer(serializers.Serializer):
         if Post.objects.filter(pk=value).exists():
             return value
         raise serializers.ValidationError("Post does't exists")
+    
+    def validate_content(self, value):
+        if len(value) > 0:
+            return value
+        raise serializers.ValidationError("Content can't empty")
 
     def create(self, validated_data):
         profile = Profile.objects.get(profile_name=validated_data['profile_name'])
