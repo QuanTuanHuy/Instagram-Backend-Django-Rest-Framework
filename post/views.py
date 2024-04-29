@@ -10,7 +10,9 @@ from django.shortcuts import get_object_or_404, get_list_or_404
 from account.models import Profile
 from account.serializers import ProfileSerializer
 
-from comment.serializers import CommentCreateSerializer, CommentSerializer
+from comment.models import Comment
+from comment.serializers import CommentCreateSerializer, CommentSerializer, \
+                                CommentDeleteSerializer
 
 from .models import Post
 from .serializers import *
@@ -59,6 +61,29 @@ def history_post(request):
     serializer = PostSerializer(owner.posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def post_saved(request):
+    profile = Profile.objects.get(user=request.user)
+    
+    if request.method == 'POST':
+        if profile.profile_name != request.data['profile_name']:
+            return Response({"profile_name": "Wrong profile_name"},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = SavedPostCreatedSerializer(data=request.data)
+
+        if serializer.is_valid():
+            saved_post = serializer.save()
+            return Response(SavedPostSerializer(saved_post).data,
+                            status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'GET':
+        post_saved = SavedPost.objects.filter(profile=profile)
+        serializers = SavedPostSerializer(post_saved, many=True)
+        return Response(serializers.data, status=status.HTTP_200_OK)
+        
+
 #what are profile liked this post
 @api_view(['GET'])
 def profile_liked(request, post_id):
@@ -80,6 +105,7 @@ def like_create(request):
     if serializer.is_valid():
         like = serializer.save()
         return Response(LikeSerializer(like).data ,status=status.HTTP_201_CREATED)
+    
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -107,6 +133,22 @@ def comment_create(request):
         return Response(status=status.HTTP_201_CREATED)
     return Response(serializer.errors ,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_comment(request):
+    profile = Profile.objects.get(user=request.user)
+    serializer = CommentDeleteSerializer(data=request.data)
+    if serializer.is_valid():
+        post = get_object_or_404(Post, pk=serializer.validated_data['post_id'])
+        comment = get_object_or_404(Comment, pk=serializer.validated_data['comment_id'],
+                                    post=post)
+        if post.owner == profile or comment.owner == profile:
+            comment.delete()
+            return Response({"message": "Delete successfully"},
+                            status=status.HTTP_204_NO_CONTENT)
+        else: return Response(status=status.HTTP_403_FORBIDDEN)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def history_comments(request):
@@ -114,6 +156,10 @@ def history_comments(request):
     comments = profile.comments
     serializers = CommentSerializer(comments, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
-    
 
-    
+@api_view(['GET'])    
+def comments_in_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comments = Comment.objects.filter(post=post)
+    serializers = CommentSerializer(comments, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)

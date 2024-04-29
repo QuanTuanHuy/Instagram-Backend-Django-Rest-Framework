@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from location.models import Place
 from account.models import Profile
 
-from .models import Post, Like
+from .models import Post, Like, SavedPost
 
 choices = [('', 'No Location')] + list(Place.objects.all())
 
@@ -35,6 +36,39 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostUpdateSerializer(serializers.Serializer):
     caption = serializers.CharField()
+
+class SavedPostSerializer(serializers.ModelSerializer):
+    profile_name = serializers.SerializerMethodField()
+    savedAt = serializers.DateTimeField(source='created')
+    class Meta:
+        model = SavedPost
+        fields = ['profile_name', 'post', 'savedAt']
+        depth = 1
+    
+    def get_profile_name(self, obj):
+        return obj.profile.profile_name
+
+class SavedPostCreatedSerializer(serializers.Serializer):
+    profile_name = serializers.CharField()
+    post_id = serializers.IntegerField()
+
+    # def validate_post_id(self, value):
+    #     post = get_object_or_404(Post, pk=value)
+    #     return value
+
+    def create(self, validated_data):
+        profile = get_object_or_404(Profile, profile_name=validated_data['profile_name'])
+        post = get_object_or_404(Post, pk=validated_data['post_id'])
+
+        try:
+            saved_post = SavedPost.objects.get(profile=profile, post=post)
+            saved_post.delete()
+            return saved_post
+        except:
+            pass 
+        saved_post = SavedPost.objects.create(profile=profile, post=post)
+        saved_post.save()
+        return saved_post
 
 
 #LIKE

@@ -33,3 +33,7 @@ class CommentCreateSerializer(serializers.Serializer):
                                          content=validated_data['content'])
         comment.save()
         return comment
+    
+class CommentDeleteSerializer(serializers.Serializer):
+    post_id = serializers.IntegerField()
+    comment_id = serializers.IntegerField()

@@ -18,6 +18,16 @@ class Post(models.Model):
     class Meta:
         ordering = ['-created']
 
+class SavedPost(models.Model):
+    profile = models.ForeignKey(Profile, related_name='posts_saved',
+                                on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='saved_post',
+                             on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created']
+
 class Like(models.Model):
     profile = models.ForeignKey(Profile, related_name='post_liked',
                                 on_delete=models.CASCADE)

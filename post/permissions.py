@@ -1,5 +1,6 @@
 from rest_framework import permissions
-from .models import Profile
+from .models import Post
+from account.models import Profile
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
