@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 
-from .models import Profile
+from .models import Profile, Follow
 
 class RegisterSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(required=True, write_only=True)
@@ -60,3 +60,33 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['user', 'profile_name', 'bio', 'profile_picture']
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = '__all__'
+        depth = 1
+
+class FollowCreateSerializer(serializers.Serializer):
+    follow_from = serializers.CharField()
+    follow_to = serializers.CharField()
+
+    def validate(self, attrs):
+        if attrs['follow_from'] == attrs['follow_to']:
+            raise serializers.ValidationError(
+                {"error": "Can't follow yourself"})
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        profile_from = get_object_or_404(Profile, profile_name=validated_data['follow_from'])
+        profile_to = get_object_or_404(Profile, profile_name=validated_data['follow_to'])
+
+        try:
+            follow = Follow.objects.get(follow_from=profile_from, follow_to=profile_to)
+            follow.delete()
+            return follow
+        except: pass
+
+        follow = Follow.objects.create(follow_from=profile_from, follow_to=profile_to)
+        follow.save()
+        return follow

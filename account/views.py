@@ -2,6 +2,7 @@ from rest_framework.generics import *
 from rest_framework.response import Response
 from rest_framework import status 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 from django.contrib.auth.models import User
 
@@ -9,7 +10,6 @@ from .models import Profile
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
 
-# Create your views here.
 
 class UserList(ListAPIView):
     queryset = User.objects.all()
@@ -62,3 +62,21 @@ class ProfileSearch(ListAPIView):
         if profile_name is not None:
             queryset = queryset.filter(profile_name__contains=profile_name)
         return queryset
+    
+#FOLLOW
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def follow_profile(request, profile_name):
+    profile = Profile.objects.get(user=request.user)
+    if profile_name != profile.profile_name or \
+        request.data['follow_from'] != profile.profile_name:
+        return Response({"error": "Wrong profile name"},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = FollowCreateSerializer(data=request.data)
+    if serializer.is_valid():
+        follow = serializer.save()
+        return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

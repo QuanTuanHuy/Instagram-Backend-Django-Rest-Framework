@@ -54,12 +54,14 @@ class PostViewSet(ModelViewSet):
             return PostUpdateSerializer
         return PostSerializer
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def history_post(request):
     owner = Profile.objects.get(user=request.user)
     serializer = PostSerializer(owner.posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -94,7 +96,9 @@ def profile_liked(request, post_id):
     serializer = ProfileSerializer(profiles, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 #LIKE VIEW
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def like_create(request):
@@ -108,6 +112,7 @@ def like_create(request):
     
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def history_likes(request):
@@ -117,6 +122,7 @@ def history_likes(request):
     posts = Post.objects.filter(pk__in=post_ids)
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 #CommetView
 
@@ -133,6 +139,7 @@ def comment_create(request):
         return Response(status=status.HTTP_201_CREATED)
     return Response(serializer.errors ,status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def delete_comment(request):
@@ -142,12 +149,14 @@ def delete_comment(request):
         post = get_object_or_404(Post, pk=serializer.validated_data['post_id'])
         comment = get_object_or_404(Comment, pk=serializer.validated_data['comment_id'],
                                     post=post)
+        #only owner of comment or owner of post can delete comment
         if post.owner == profile or comment.owner == profile:
             comment.delete()
             return Response({"message": "Delete successfully"},
                             status=status.HTTP_204_NO_CONTENT)
         else: return Response(status=status.HTTP_403_FORBIDDEN)
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -156,6 +165,7 @@ def history_comments(request):
     comments = profile.comments
     serializers = CommentSerializer(comments, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])    
 def comments_in_post(request, post_id):
