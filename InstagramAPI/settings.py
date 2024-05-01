@@ -85,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'instagramDB',  # Replace with your actual database name
         'USER': 'root',  # Replace with your MySQL username
-        'PASSWORD': '',  # Replace with your MySQL password
+        'PASSWORD': 'quantuanhuy',  # Replace with your MySQL password
         'HOST': 'localhost',  # Replace with your MySQL host if it's not localhost
         'PORT': '3306',  # Default MySQL port, adjust if different
     }

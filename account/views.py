@@ -80,3 +80,5 @@ def follow_profile(request, profile_name):
         return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+## view all followers, following
