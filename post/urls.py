@@ -19,4 +19,8 @@ urlpatterns = [
     # path('your_activity/tagged/', views.tagged, name='tagged'),
     path('your_activity/likes/', views.history_likes, name='history_likes'),
     path('your_activity/comments/', views.history_comments, name='history_comments'),
+
+    path('<str:profile_name>/news_feed/', views.news_feed, name='news_feed'),
+
+    # path('explore/tags/<str:tag_name>/', views.post_with_tag, name='post_with_tag'),
 ]

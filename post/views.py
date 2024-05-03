@@ -173,3 +173,16 @@ def comments_in_post(request, post_id):
     comments = Comment.objects.filter(post=post)
     serializers = CommentSerializer(comments, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
+
+
+
+#NEWS FEED
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def news_feed(request, profile_name):
+    profile = get_object_or_404(Profile, profile_name=profile_name,
+                                user=request.user)
+    followings = profile.me_follow_other.values_list('follow_to', flat=True)
+    posts = Post.objects.filter(owner__in=followings)
+    serializers = PostSerializer(posts, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
