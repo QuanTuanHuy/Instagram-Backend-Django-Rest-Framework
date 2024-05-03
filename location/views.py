@@ -26,11 +26,3 @@ class PlaceDetail(RetrieveUpdateDestroyAPIView):
         pk = self.kwargs['pk']
         return get_object_or_404(Place, pk=pk, slug=slug)
     
-class PostInPlace(ListAPIView):
-    serializer_class = PostSerializer
-    def get_queryset(self):
-        slug = self.kwargs['slug']
-        pk = self.kwargs['pk']
-        if slug and pk:
-            place = get_object_or_404(Place, slug=slug, pk=pk)
-        return place.posts_in_location.order_by('-created')

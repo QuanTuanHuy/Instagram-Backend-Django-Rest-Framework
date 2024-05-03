@@ -22,5 +22,6 @@ urlpatterns = [
 
     path('<str:profile_name>/news_feed/', views.news_feed, name='news_feed'),
 
-    # path('explore/tags/<str:tag_name>/', views.post_with_tag, name='post_with_tag'),
+    path('explore/tags/<str:tag_name>/', views.post_with_tag, name='post_with_tag'),
+    path('explore/location/<int:id>/<slug:name>/', views.post_in_location, name='post_in_location'),
 ]

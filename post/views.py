@@ -17,6 +17,7 @@ from comment.serializers import CommentCreateSerializer, CommentSerializer, \
 from .models import Post, Like, SavedPost, HashTag
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
+from django.utils.text import slugify
 
 #POSTVIEW
 class PostViewSet(ModelViewSet):
@@ -37,7 +38,8 @@ class PostViewSet(ModelViewSet):
             location = serializer.validated_data.pop('location', None)
             location_obj = None
             if location is not None:
-                location_obj, created = Place.objects.get_or_create(name=location)
+                location_obj, created = Place.objects.get_or_create(name=location,
+                                                                    slug=slugify(location))
 
             post = Post.objects.create(owner=owner, **serializer.validated_data)
             post.hashtags.set(hashtag_objs)
@@ -202,3 +204,19 @@ def news_feed(request, profile_name):
     posts = Post.objects.filter(owner__in=followings)
     serializers = PostSerializer(posts, many=True)
     return Response(serializers.data, status=status.HTTP_200_OK)
+
+#EXPLORE
+@api_view(['GET'])
+def post_with_tag(request, tag_name):
+    hashtag = get_object_or_404(HashTag, name=tag_name)
+    posts = hashtag.posts.all()[:20] or []
+    serializers = PostSerializer(posts, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def post_in_location(request, id, name):
+    location = get_object_or_404(Place, pk=id, slug=name)
+    posts = location.posts_in_location.all()[:20] or None
+    serializers = PostSerializer(posts, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
+
