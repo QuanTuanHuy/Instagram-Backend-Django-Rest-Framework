@@ -8,13 +8,17 @@ from account.models import Profile
 
 from .models import Post, Like, SavedPost
 
-choices = [('', 'No Location')] + list(Place.objects.all())
+#HASHTAG
+class HashTagSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
 
 #POST
 class PostCreateSerializer(serializers.Serializer):
-    image = serializers.ImageField()
+    image = serializers.URLField(required=True)
     caption = serializers.CharField()
-    location = serializers.ChoiceField(choices=choices, required=False)
+    location = serializers.CharField(required=False)
+    #list of hashtags
+    hashtags = serializers.ListField(child=serializers.CharField() ,required=False)
 
 class PostSerializer(serializers.ModelSerializer):
     profile_name = serializers.SerializerMethodField()
@@ -22,8 +26,9 @@ class PostSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
     class Meta:
         model = Post
-        fields = ['id' ,'profile_name', 'image', 'caption', 'created', 'location']
-        read_only_fields = ['id' ,'profile_name', 'image', 'created', 'location']
+        fields = ['id' ,'profile_name', 'image', 'caption', 'created', 'hashtags', 'location']
+        read_only_fields = ['id' ,'profile_name', 'image', 'created', 'location', 'hashtags']
+        depth = 1
     
     def get_profile_name(self, obj):
         return obj.owner.profile_name

@@ -14,7 +14,7 @@ from comment.models import Comment
 from comment.serializers import CommentCreateSerializer, CommentSerializer, \
                                 CommentDeleteSerializer
 
-from .models import Post
+from .models import Post, Like, SavedPost, HashTag
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
 
@@ -26,10 +26,26 @@ class PostViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             owner = Profile.objects.get(user=request.user)
+
+            hashtags = serializer.validated_data.pop('hashtags', [])
+            hashtag_objs = set()
+            for hashtag in hashtags:
+                hashtag = hashtag.lower()
+                obj, created = HashTag.objects.get_or_create(name=hashtag)
+                hashtag_objs.add(obj)
+            
+            location = serializer.validated_data.pop('location', None)
+            location_obj = None
+            if location is not None:
+                location_obj, created = Place.objects.get_or_create(name=location)
+
             post = Post.objects.create(owner=owner, **serializer.validated_data)
+            post.hashtags.set(hashtag_objs)
+            post.location = location_obj
             post.save()
             return Response(PostSerializer(post).data,
                             status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
