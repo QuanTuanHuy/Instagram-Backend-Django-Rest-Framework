@@ -80,5 +80,24 @@ def follow_profile(request, profile_name):
         return Response(FollowSerializer(follow).data, status=status.HTTP_201_CREATED)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_followers(request, profile_name):
+    profile = get_object_or_404(Profile, profile_name=profile_name,
+                                user=request.user)
+    followers = profile.other_follow_me.values_list('follow_from', flat=True)
+    print(followers)
+    profile_followers = Profile.objects.filter(pk__in=followers)
+    serializers = ProfileSerializer(profile_followers, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)
 
-## view all followers, following
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_followings(request, profile_name):
+    profile = get_object_or_404(Profile, profile_name=profile_name,
+                                user=request.user)
+    followings = profile.me_follow_other.values_list('follow_to', flat=True)
+    profile_followings = Profile.objects.filter(pk__in=followings)
+    serializers = ProfileSerializer(profile_followings, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)

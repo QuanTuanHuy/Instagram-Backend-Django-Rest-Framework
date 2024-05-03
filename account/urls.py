@@ -9,5 +9,7 @@ urlpatterns = [
     path('profiles/', views.ProfileList.as_view(), name='profile-list'),
     path('profiles/<str:profile_name>/', views.ProfileDetail.as_view(), name='profile-detail'),
     path('profiles/<str:profile_name>/follow/', views.follow_profile, name='follow_profile'),
+    path('profiles/<str:profile_name>/all_followers/', views.all_followers, name='all_followers'),
+    path('profiles/<str:profile_name>/all_followings/', views.all_followings, name='all_followings'),
     path('profiles/search', views.ProfileSearch.as_view(), name='profile-search'),
 ]
