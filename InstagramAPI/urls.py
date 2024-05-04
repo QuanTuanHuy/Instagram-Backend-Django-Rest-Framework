@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/', include('account.urls')),
     path('api/locations/', include("location.urls")),
     path('api/', include("post.urls")),
+    path('api/direct/', include('message.urls')),
 ]
 
 if settings.DEBUG:

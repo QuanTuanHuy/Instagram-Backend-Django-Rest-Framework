@@ -56,10 +56,13 @@ class ChangePasswordSerializer(serializers.Serializer):
         return value
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    full_name = serializers.SerializerMethodField()
     class Meta:
         model = Profile
-        fields = ['user', 'profile_name', 'bio', 'profile_picture']
+        fields = ['full_name', 'profile_name', 'bio', 'profile_picture']
+    
+    def get_full_name(self, obj):
+        return obj.user.first_name + ' ' + obj.user.last_name
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
