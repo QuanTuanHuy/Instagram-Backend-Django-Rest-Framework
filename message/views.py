@@ -5,15 +5,35 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 
 from .models import Message
 from .serializers import MessageCreateSerializer, InboxItemSerializer, \
     MessageSerializer
 
 from account.models import Profile
+from account.serializers import ProfileSerializer
 
-#post, 
-# class MessageDetail()
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_profiles_inbox_with_me(request):
+    profile_me = request.user.profile
+    other_profiles_chat_to_me = profile_me.received_messages.values_list('sender', flat=True).distinct()
+    other_profiles_me_chat_to = profile_me.sent_messages.values_list('receiver', flat=True).distinct()
+    other_profile_ids = other_profiles_chat_to_me.union(other_profiles_me_chat_to)
+    
+    response = []
+    for profile_id in set(other_profile_ids):
+        profile_other = Profile.objects.get(id=profile_id)
+        last_message = Message.objects.filter((Q(sender=profile_other) & Q(receiver=profile_me)) | \
+                                              (Q(sender=profile_me) & Q(receiver=profile_other))) \
+                                              .filter(deleted=False).first()
+        response.append([{"profile_other": ProfileSerializer(profile_other).data,
+                         "last_message": MessageSerializer(last_message).data}])
+
+    return Response(response, status=status.HTTP_200_OK)
+
 
 class MessageList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -43,8 +63,7 @@ class MessageList(ListCreateAPIView):
         profile_me = self.request.user.profile
         messages = Message.objects.filter((Q(sender=profile_other) & Q(receiver=profile_me)) | 
                                           (Q(sender=profile_me) & Q(receiver=profile_other))) \
-                                            .filter(deleted=False) \
-                                            .order_by('-sent_at')
+                                            .filter(deleted=False)
         data = {
             "profile_me": profile_me,
             "profile_other": profile_other,
@@ -57,3 +76,43 @@ class MessageList(ListCreateAPIView):
             return MessageCreateSerializer
         else:
             return InboxItemSerializer
+        
+
+class MessageDetail(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MessageSerializer
+
+    def get_object(self):
+        me = self.request.user.profile
+        other = get_object_or_404(Profile, id=self.kwargs['profile_other_id'])
+
+        message = get_object_or_404(Message, id=self.kwargs['message_id'])
+
+        if (message.sender == me and message.receiver == other) or \
+            (message.sender == other and message.receiver == me):
+            return message
+        
+        return None
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.sender != self.request.user.profile:
+            return Response({"error": "You can only update your own messages."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(instance, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.sender != self.request.user.profile:
+            return Response({"error": "You can only delete your own messages."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        
+        instance.deleted = True
+        instance.save()
+        return Response({"message": "Message deleted successfully."},
+                        status=status.HTTP_204_NO_CONTENT)
+    

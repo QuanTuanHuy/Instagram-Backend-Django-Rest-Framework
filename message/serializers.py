@@ -23,6 +23,12 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ['sender_name', 'receiver_name', 'content', 'sent_at', 'updated_at', 'seen', 'deleted']
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data.get('content', instance.content)
+        instance.deleted = validated_data.get('deleted', instance.deleted)
+        instance.save()
+        return instance
     
     def get_sender_name(self, obj):
         sender = obj.sender.user
@@ -36,3 +42,8 @@ class InboxItemSerializer(serializers.Serializer):
     profile_me = ProfileSerializer()
     profile_other = ProfileSerializer()
     messages = serializers.ListField(child=MessageSerializer())
+
+
+class InboxListSerializer(serializers.Serializer):
+    profile_other = ProfileSerializer()
+    last_message = MessageSerializer()

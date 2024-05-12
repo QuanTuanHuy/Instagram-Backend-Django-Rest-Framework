@@ -10,3 +10,6 @@ class Message(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
     deleted = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-sent_at']
