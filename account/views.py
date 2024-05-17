@@ -84,8 +84,7 @@ def follow_profile(request, profile_name):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_followers(request, profile_name):
-    profile = get_object_or_404(Profile, profile_name=profile_name,
-                                user=request.user)
+    profile = get_object_or_404(Profile, profile_name=profile_name)
     followers = profile.other_follow_me.values_list('follow_from', flat=True)
     print(followers)
     profile_followers = Profile.objects.filter(pk__in=followers)
@@ -95,8 +94,7 @@ def all_followers(request, profile_name):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_followings(request, profile_name):
-    profile = get_object_or_404(Profile, profile_name=profile_name,
-                                user=request.user)
+    profile = get_object_or_404(Profile, profile_name=profile_name)
     followings = profile.me_follow_other.values_list('follow_to', flat=True)
     profile_followings = Profile.objects.filter(pk__in=followings)
     serializers = ProfileSerializer(profile_followings, many=True)

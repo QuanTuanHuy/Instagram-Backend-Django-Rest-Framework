@@ -7,7 +7,10 @@ class Profile(models.Model):
                                 on_delete=models.CASCADE)
     profile_name = models.CharField(unique=True, max_length=30)
     bio = models.CharField(max_length=1000, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True)
+    profile_picture = models.URLField(blank=True)
+    number_of_followers = models.IntegerField(default=0)
+    number_of_followings = models.IntegerField(default=0)
+
 
 
 class Follow(models.Model):

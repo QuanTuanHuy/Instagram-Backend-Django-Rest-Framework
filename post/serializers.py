@@ -100,10 +100,11 @@ class LikeCreateSerializer(serializers.Serializer):
         try:
             like = Like.objects.get(profile=profile, post=post)
             like.delete()
+            post.number_of_likes -= 1
+            post.save()
             return like
-        except:
-            pass
-
-        like = Like.objects.create(profile=profile, post=post)
-        like.save()
-        return like
+        except Like.DoesNotExist:
+            like = Like.objects.create(profile=profile, post=post)
+            like.save()
+            post.number_of_likes += 1
+            return like

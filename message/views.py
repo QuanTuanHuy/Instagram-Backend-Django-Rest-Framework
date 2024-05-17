@@ -116,3 +116,20 @@ class MessageDetail(RetrieveUpdateDestroyAPIView):
         return Response({"message": "Message deleted successfully."},
                         status=status.HTTP_204_NO_CONTENT)
     
+#search
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def search_inbox(request, profile_other_id):
+    profile_me = request.user.profile
+    profile_other = get_object_or_404(Profile, id=profile_other_id)
+    search_query = request.query_params.get('q', None)
+    if search_query is None:
+        return Response({"error": "No search query provided."},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    messages = Message.objects.filter((Q(sender=profile_other) & Q(receiver=profile_me)) | \
+                                      (Q(sender=profile_me) & Q(receiver=profile_other)),
+                                      content__icontains=search_query).filter(deleted=False)
+    
+    serializers = MessageSerializer(messages, many=True)
+    return Response(serializers.data, status=status.HTTP_200_OK)

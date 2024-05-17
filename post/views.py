@@ -170,6 +170,8 @@ def delete_comment(request):
         #only owner of comment or owner of post can delete comment
         if post.owner == profile or comment.owner == profile:
             comment.delete()
+            post.number_of_comments -= 1
+            post.save()
             return Response({"message": "Delete successfully"},
                             status=status.HTTP_204_NO_CONTENT)
         else: return Response(status=status.HTTP_403_FORBIDDEN)

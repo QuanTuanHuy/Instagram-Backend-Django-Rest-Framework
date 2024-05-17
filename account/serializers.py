@@ -87,9 +87,16 @@ class FollowCreateSerializer(serializers.Serializer):
         try:
             follow = Follow.objects.get(follow_from=profile_from, follow_to=profile_to)
             follow.delete()
+            profile_from.number_of_followings -= 1
+            profile_to.number_of_followers -= 1
+            profile_from.save()
+            profile_to.save()
             return follow
-        except: pass
-
-        follow = Follow.objects.create(follow_from=profile_from, follow_to=profile_to)
-        follow.save()
-        return follow
+        except Follow.DoesNotExist:
+            follow = Follow.objects.create(follow_from=profile_from, follow_to=profile_to)
+            follow.save()
+            profile_from.number_of_followings += 1
+            profile_to.number_of_followers += 1
+            profile_from.save()
+            profile_to.save()
+            return follow

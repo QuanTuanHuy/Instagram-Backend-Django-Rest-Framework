@@ -32,6 +32,8 @@ class CommentCreateSerializer(serializers.Serializer):
         comment = Comment.objects.create(owner=profile, post=post,
                                          content=validated_data['content'])
         comment.save()
+        post.number_of_comments += 1
+        post.save()
         return comment
     
 class CommentDeleteSerializer(serializers.Serializer):
